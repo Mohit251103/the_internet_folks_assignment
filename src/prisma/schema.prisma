@@ -1,0 +1,47 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @unique
+    name      String   @default("")
+    email     String   @unique
+    password  String
+    createdAt DateTime @default(now()) @map("created_at")
+
+    communitiesOwned Community[]
+    members           Member[]
+}
+
+model Community {
+    id        String   @id @unique
+    name      String
+    slug      String   @unique
+    ownerId   String   @map("owner")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    owner  User     @relation(fields: [ownerId], references: [id])
+    members Member[]
+}
+
+model Role {
+    id        String   @id @unique
+    name      String   @unique
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    members    Member[]
+}
+
+model Member {
+    id        String   @id @unique
+    communityId String    @map("community")
+    userId      String    @map("user")
+    roleId      String    @map("role")
+    createdAt DateTime @default(now()) @map("created_at")
+
+    community   Community @relation(fields: [communityId], references: [id])
+    user        User      @relation(fields: [userId], references: [id])
+    role        Role      @relation(fields: [roleId], references: [id])
+}
