@@ -6,13 +6,16 @@ export const createRole = async (req: Request, res: Response) => {
 
     const parsedData = roleSchema.safeParse(req.body);
     if (!parsedData.success) {
+        const errors = parsedData.error.errors.map((error) => {
+            return {
+                message: error.message,
+                param: error.path,
+                code: error.code
+            }
+        })
         res.status(400).json({
             status: false,
-            errors: {
-                message: parsedData.error.errors[0].message,
-                param: parsedData.error.errors[0].path,
-                code: parsedData.error.errors[0].code
-            }
+            errors: errors
         });
         return;
     }
@@ -51,7 +54,7 @@ export const getRole = async (req: Request, res: Response) => {
             content: {
                 meta: {
                     total: response.data?.length,
-                    pages: 1, 
+                    pages: 1,
                     page: 1
                 },
                 data: response.data
