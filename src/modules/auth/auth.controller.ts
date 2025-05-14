@@ -171,7 +171,7 @@ export const getMe = async (req: Request, res: Response) => {
         })
 
     } catch (error) {
-        if (error instanceof Error) {
+        if (error instanceof Error && error.message==="NOT_SIGNEDIN") {
             res.status(401).json({
                 status: false,
                 errors: [
