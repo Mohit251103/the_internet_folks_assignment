@@ -122,13 +122,3 @@ export const generateAccessToken = (id: string) => {
     );
     return token;
 }
-
-export const getData = (token: string): JwtPayload => {
-    const data = jwt.decode(token);
-
-    if (!data || typeof data === "string") {
-        throw new Error("Invalid token payload");
-    }
-
-    return data;
-}

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { SignInSchema, SignUpSchema } from "./auth.validator";
-import { authenticateUser, createUser, generateAccessToken, getData, getUserById } from "./auth.service";
+import { authenticateUser, createUser, generateAccessToken, getUserById } from "./auth.service";
 import { JwtPayload } from "jsonwebtoken";
+import { getDataFromAccessToken } from "../../utils/getDataFromAccessToken";
 
 
 export const SignUp = async (req: Request, res: Response) => {
@@ -156,7 +157,7 @@ export const getMe = async (req: Request, res: Response) => {
         if (!access_token) {
             throw Error("NOT_SIGNEDIN");
         }
-        const data : JwtPayload = getData(access_token);
+        const data: JwtPayload = getDataFromAccessToken(access_token);
         const getUser = await getUserById(data.id);
 
         if (!getUser.ok) {
