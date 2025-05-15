@@ -28,7 +28,7 @@ export const SignUp = async (req: Request, res: Response) => {
             if (response.error === "RESOURCE_EXISTS") {
                 throw Error("RESOURCE_EXISTS");
             }
-            throw Error();
+            throw Error("INTERNAL_SERVER_ERROR");
         }
 
         const access_token = generateAccessToken(response.data!.id);
@@ -101,7 +101,7 @@ export const SignIn = async (req: Request, res: Response) => {
                 || response.error === "INVALID_CREDENTIALS_PASSWORD") {
                 throw Error(response.error);
             }
-            throw Error();
+            throw Error("INTERNAL_SERVER_ERROR");
         }
 
         const access_token = generateAccessToken(response.data!.id);
@@ -161,7 +161,7 @@ export const getMe = async (req: Request, res: Response) => {
         const getUser = await getUserById(data.id);
 
         if (!getUser.ok) {
-            throw Error();
+            throw Error("INTERNAL_SERVER_ERROR");
         }
 
         res.status(200).json({

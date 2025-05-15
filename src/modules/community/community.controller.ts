@@ -53,20 +53,23 @@ export const createCommunity = async (req: Request, res: Response) => {
 
 export const getAllCommunity = async (req: Request, res: Response) => {
     try {
-        const response = await getCommunities();
+
+        //  /v1/community?page=1
+        const page = parseInt(req.query.page as string) || 1;
+        const response = await getCommunities(page);
         if (!response.ok) {
-            throw Error();
+            throw Error("INTERNAL_SERVER_ERROR");
         }
 
         res.status(200).json({
             status: true, 
             content: {
                 meta: {
-                    total: response.data?.length,
-                    pages: Math.ceil(response.data?.length! / 10),
-                    page: 1
+                    total: response.data?.count,
+                    pages: Math.ceil(response.data?.count! / 10),
+                    page
                 },
-                data: response.data
+                data: response.data?.communities
             }
         })
     } catch (error) {
@@ -86,7 +89,8 @@ export const getAllCommunity = async (req: Request, res: Response) => {
 
 export const getAllMembers = async (req: Request, res: Response) => {
     try {
-        const response = await getMembers(req.params.id);
+        const page = parseInt(req.query.page as string) || 1;
+        const response = await getMembers(req.params.slug, page);
         if (!response.ok) {
             throw Error();
         }
@@ -95,11 +99,11 @@ export const getAllMembers = async (req: Request, res: Response) => {
             status: true,
             content: {
                 "meta": {
-                    "total": response.data?.length,
-                    "pages": 1,
-                    "page": 1
+                    total: response.data?.count,
+                    pages: Math.ceil(response.data?.count! / 10),
+                    page
                 },
-                "data": response.data
+                "data": response.data?.members
             }
         });
     } catch (error) {
@@ -119,18 +123,22 @@ export const getAllMembers = async (req: Request, res: Response) => {
 
 export const getOwnedCommunities = async (req: Request, res: Response) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
         const access_token = req.cookies["access_token"];
         const { id } = getDataFromAccessToken(access_token);
-        const communities = await getMyCommunities(id);
+        const communities = await getMyCommunities(id, page);
+        if (!communities.ok) {
+            throw Error("INTERNAL_SERVER_ERROR");
+        }
         res.status(200).json({
             status: true,
             content: {
                 meta: {
-                    total: communities.data?.length,
-                    pages: Math.ceil(communities.data?.length! / 10),
-                    page: 1
+                    total: communities.data?.count,
+                    pages: Math.ceil(communities.data?.count! / 10),
+                    page
                 },
-                data: communities.data
+                data: communities.data?.owned_communities
             }
         });
     } catch (error) {
@@ -149,18 +157,19 @@ export const getOwnedCommunities = async (req: Request, res: Response) => {
 
 export const getAllJoinedCommunities = async (req: Request, res: Response) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
         const access_token = req.cookies["access_token"];
         const { id } = getDataFromAccessToken(access_token);
-        const communities = await getMyJoinedCommunities(id);
+        const communities = await getMyJoinedCommunities(id, page);
         res.status(200).json({
             status: true,
             content: {
                 meta: {
-                    total: communities.data?.length,
-                    pages: Math.ceil(communities.data?.length! / 10),
-                    page: 1
+                    total: communities.data?.count,
+                    pages: Math.ceil(communities.data?.count! / 10),
+                    page
                 },
-                data: communities.data
+                data: communities.data?.joined_communities
             }
         })
     } catch (error) {

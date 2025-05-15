@@ -1,8 +1,8 @@
 import prisma from "../../config/prisma";
 import { Snowflake } from "@theinternetfolks/snowflake";
-import { RoleName } from "./role.validator";
+import { roleInputType } from "./role.validator";
 
-export const addRole = async ({ name }: { name: RoleName }) => {
+export const addRole = async ({ name }: roleInputType) => {
     try {
         const res = await prisma.role.create({
             data: {
@@ -22,12 +22,20 @@ export const addRole = async ({ name }: { name: RoleName }) => {
     }
 }
 
-export const fetchRoles = async () => {
+export const fetchRoles = async (page: number) => {
     try {
-        const res = await prisma.role.findMany();
+        const offset = (page - 1) * 10;
+        const roles = await prisma.role.findMany({
+            skip: offset,
+            take: 10
+        });
+        const count = await prisma.role.count();
         return {
             ok: true,
-            data: res
+            data: {
+                roles,
+                count
+            }
         };
     } catch (error: any) {
         return {

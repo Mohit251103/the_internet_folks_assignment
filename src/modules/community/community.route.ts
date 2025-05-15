@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/", createCommunity);
 router.get("/", getAllCommunity);
-router.get("/:id/members", getAllMembers);
+router.get("/:slug/members", getAllMembers);
 router.get('/me/owner', getOwnedCommunities);
 router.get('/me/member', getAllJoinedCommunities);
 

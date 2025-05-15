@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { getDataFromAccessToken } from "../utils/getDataFromAccessToken";
 
 export const isAuthorized = (req:Request, res:Response, next:NextFunction) => {
     const access_token = req.cookies["access_token"];

@@ -2,7 +2,7 @@ import { Snowflake } from "@theinternetfolks/snowflake";
 import prisma from "../../config/prisma";
 import { SignInData, SignUpData } from "./auth.validator";
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 export const createUser = async (data: SignUpData) => {
     try {

@@ -45,19 +45,20 @@ export const createRole = async (req: Request, res: Response) => {
 
 export const getRole = async (req: Request, res: Response) => {
     try {
-        const response = await fetchRoles();
+        const page = parseInt(req.query.page as string) || 1;
+        const response = await fetchRoles(page);
         if (!response.ok) {
-            throw Error();
+            throw Error("INTERNAL_SERVER_ERROR");
         }
         res.status(200).json({
             status: true,
             content: {
                 meta: {
-                    total: response.data?.length,
-                    pages: 1,
-                    page: 1
+                    total: response.data?.count,
+                    pages: Math.ceil(response.data?.count!/10),
+                    page
                 },
-                data: response.data
+                data: response.data?.roles
             }
         })
     } catch (error: any) {

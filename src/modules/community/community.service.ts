@@ -53,7 +53,14 @@ export const addCommunity = async (name: string, token: string) => {
 
         return {
             ok: true,
-            data: community
+            data: {
+                id: community.id,
+                name: community.name,
+                slug: community.slug,
+                owner: community.ownerId,
+                created_at: community.createdAt,
+                updated_at: community.updatedAt
+            }
         }
     } catch (error) {
         console.log(error);
@@ -63,8 +70,9 @@ export const addCommunity = async (name: string, token: string) => {
     }
 }
 
-export const getCommunities = async () => {
+export const getCommunities = async (page:number) => {
     try {
+        const offset = (page - 1) * 10;
         const communities = await prisma.community.findMany({
             omit: {
                 ownerId: true
@@ -76,11 +84,18 @@ export const getCommunities = async () => {
                         name: true
                     }
                 }
-            }
+            },
+            skip: offset,
+            take: 10
         });
+
+        const count = await prisma.community.count();
         return {
             ok: true,
-            data: communities
+            data: {
+                communities,
+                count 
+            }
         };
     } catch (error) {
         console.log(error);
@@ -90,8 +105,9 @@ export const getCommunities = async () => {
     }
 }
 
-export const getMembers = async (slug: string) => {
+export const getMembers = async (slug: string, page: number) => {
     try {
+        const offset = (page - 1) * 10;
         const members = await prisma.member.findMany({
             where: {
                 community: {
@@ -115,6 +131,16 @@ export const getMembers = async (slug: string) => {
                         name: true
                     }
                 }
+            },
+            skip: offset,
+            take: 10
+        });
+
+        const count = await prisma.member.count({
+            where: {
+                community: {
+                    slug: slug
+                }
             }
         });
 
@@ -130,7 +156,10 @@ export const getMembers = async (slug: string) => {
 
         return {
             ok: true,
-            data: res
+            data: {
+                members: res,
+                count
+            }
         }
     } catch (error) {
         return {
@@ -139,25 +168,31 @@ export const getMembers = async (slug: string) => {
     }
 }
 
-export const getMyCommunities = async (id: string) => {
+export const getMyCommunities = async (id: string, page: number) => {
     try {
+        const offset = (page - 1) * 10;
         const communities = await prisma.user.findUnique({
+            where: {
+                id: id
+            },
+            include: {
+                communitiesOwned: {
+                    skip: offset,
+                    take: 10
+                }
+            }
+        })
+
+        const allOwnedCommunities = await prisma.user.findUnique({
             where: {
                 id: id
             },
             include: {
                 communitiesOwned: true
             }
-        })
+        });
 
-        if (!communities) {
-            return {
-                ok: true,
-                data: []
-            }
-        }
-        
-        const response = communities.communitiesOwned.map((community) => {
+        const response = communities?.communitiesOwned.map((community) => {
             return {
                 id: community.id,
                 name: community.name,
@@ -169,7 +204,10 @@ export const getMyCommunities = async (id: string) => {
         });
         return {
             ok: true,
-            data: response
+            data: {
+                owned_communities: response,
+                count: allOwnedCommunities?.communitiesOwned.length
+            }
         }
     } catch (error) {
         return {
@@ -179,8 +217,9 @@ export const getMyCommunities = async (id: string) => {
     }
 }
 
-export const getMyJoinedCommunities = async (id: string) => {
+export const getMyJoinedCommunities = async (id: string, page: number) => {
     try {
+        const offset = (page - 1) * 10;
         const joinedCommunities = await prisma.community.findMany({
             where: {
                 members: {
@@ -199,6 +238,18 @@ export const getMyJoinedCommunities = async (id: string) => {
                         name: true
                     }
                 }
+            },
+            skip: offset,
+            take: 10
+        });
+
+        const count = await prisma.community.count({
+            where: {
+                members: {
+                    some: {
+                        userId: id
+                    }
+                }
             }
         });
 
@@ -215,7 +266,10 @@ export const getMyJoinedCommunities = async (id: string) => {
 
         return {
             ok: true,
-            data: response
+            data: {
+                joined_communities: response,
+                count
+            }
         };
     } catch (error) {
         return {
